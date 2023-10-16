@@ -21,4 +21,5 @@ app_name = 'recipe'
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('all/', views.AllRecipeView.as_view(), name='all-recipe'),
 ]

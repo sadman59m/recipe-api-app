@@ -3,11 +3,18 @@ Views for Recipe APIs
 """
 
 from rest_framework import viewsets
+from rest_framework.generics import ListAPIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from core.models import Recipe
 from recipe import serializers
+
+
+
+class AllRecipeView(ListAPIView):
+    serializer_class = serializers.AllRecipeSerializer
+    queryset = Recipe.objects.all()
 
 
 

@@ -7,6 +7,13 @@ from rest_framework import serializers
 from core.models import Recipe
 
 
+class AllRecipeSerializer(serializers.ModelSerializer):
+    """Serializer for getting all the recipies. No authentication needed"""
+    class Meta:
+        model = Recipe
+        fields = '__all__'
+
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     """Serializer for recipes"""
