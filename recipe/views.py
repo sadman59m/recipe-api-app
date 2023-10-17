@@ -2,10 +2,14 @@
 Views for Recipe APIs
 """
 
+import os
 from rest_framework import (
     viewsets,
     mixins,
+    status,
 )
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -42,19 +46,44 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return serializers.RecipeSerializer
         
+        #custom serializer action
+        if self.action == 'upload_image':
+            return serializers.RecipeImageSerializer
+        
         return self.serializer_class
             
     def perform_create(self, serializer):
         """Create a new recipe"""
         serializer.save(user=self.request.user)
         
+    @action(methods=['POST'], detail=True, url_path='upload-image')
+    def upload_image(self, request, pk=None):
+        """Upload an image to Recipe"""
+        recipe = self.get_object()
         
+        existing_image_path = None
+        if recipe.image:
+            existing_image_path = recipe.image.path
+
+        serializer = self.get_serializer(recipe, data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            if existing_image_path and os.path.exists(existing_image_path):
+                os.remove(existing_image_path)
+                
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+
         
 class BaseRecipeAttrViewSet(mixins.DestroyModelMixin,
-                        mixins.UpdateModelMixin,
-                        mixins.ListModelMixin,
-                        viewsets.GenericViewSet,
-                        ):
+                            mixins.UpdateModelMixin,
+                            mixins.ListModelMixin,
+                            viewsets.GenericViewSet,
+                            ):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     
